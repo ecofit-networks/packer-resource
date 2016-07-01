@@ -44,5 +44,6 @@ packer build -machine-readable $ARGS -var-file=/tmp/vars.json $SRC/$TEMPLATE \
 # ... um, but generalise it for other kinds of packer builders, yeah?
 
 AMI=$(awk -F: '/artifact,0,id/ { print $2 }' /tmp/output)
+REGIONS=$(awk -F, '/,id,/ { print $6 }' /tmp/output | tr -d '[[:space:]]' | jq -c --slurp --raw-input --raw-output 'split("%!(PACKER_COMMA)") | map(split(":")) | map({(.[0]):.[1]}) | add'| sed -u 's#"#\\"#g') 
 
-echo '{ "version": { "ami": "'$AMI'" } }' >&3
+echo '{ "version": { "ami": "'$AMI'", "regions": "'$REGIONS'" } }' >&3
